@@ -1,0 +1,84 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+  html_document: default
+---
+# Which Climatic Events Caused Most Damage to Human and Property in the United States from the year 1950 - 2011 ?
+
+# Synopsis
+Storms and other severe weather events can cause both public health and economic problems for communities and municipalities. Many severe events can result in fatalities, injuries, and property damage, and preventing such outcomes to the extent possible is a key concern. This project involves exploring the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database. This database tracks characteristics of major storms and weather events in the United States, including when and where they occur, as well as estimates of any fatalities, injuries, and property damage. Our main aim will be identify ten natural events that cause most damage on the grounds of:
+1. Human Casuality
+2. Human Injury
+3. Property Damage
+4. Crop Damage
+
+# Data Loading and Transformation
+In the parent directory, we have bz2 zipped data file named 'data_zipped.bz2'. *data* stores the loaded data frame:
+```{r}
+data <- read.csv('data_zipped.bz2')
+```
+We first convert all the event names to upper case. According to cookbook´s page 6, several event type names must be changed since they are represented in more than one name, such as “TSTM WIND” and “THUNDERSTORM WIND”
+```{r}
+data$EVTYPE = toupper(data$EVTYPE)
+data[data$EVTYPE == "TSTM WIND", ]$EVTYPE = "THUNDERSTORM WIND"
+data[data$EVTYPE == "THUNDERSTORM WINDS", ]$EVTYPE = "THUNDERSTORM WIND"
+data[data$EVTYPE == "RIVER FLOOD", ]$EVTYPE = "FLOOD"
+data[data$EVTYPE == "HURRICANE/TYPHOON", ]$EVTYPE = "HURRICANE-TYPHOON"
+data[data$EVTYPE == "HURRICANE", ]$EVTYPE = "HURRICANE-TYPHOON"
+length(unique(data$EVTYPE))
+```
+
+# Results
+Top ten natural events that lead to most damage to human life and health in the United States from the year 1950 - 2011. 
+```{r}
+fatalaties <- aggregate(FATALITIES ~ EVTYPE, data = data, sum)
+fatalaties_desc <- fatalaties[order(fatalaties$FATALITIES, decreasing = TRUE), ]
+par(mfrow=c(1,2))
+barplot(fatalaties_desc[1:10, 2],  
+     xlab="Event Type", ylab="Fatality", lwd=10, col = rainbow(10))
+legend("topright", 
+       legend= fatalaties_desc[1:10, 1], 
+     fill = rainbow(10),ncol = 1,
+       cex = 0.70)
+title(main="Top 10 Disastrous Events Considering Fatalaties", cex.main = 0.75)
+
+injuries <- aggregate(INJURIES ~ EVTYPE, data = data, sum)
+injuries_desc <- injuries[order(injuries$INJURIES, decreasing = TRUE), ]
+barplot(injuries_desc[1:10, 2], 
+     xlab="Event Type", ylab="Injuries", lwd=10, col = rainbow(10))
+legend("topright", 
+       legend= injuries_desc[1:10, 1], 
+     fill = rainbow(10),ncol = 1,
+       cex = 0.70)
+title(main="Top 10 Disastrous Events Considering Injuries", cex.main = 0.75)
+```
+
+Top ten natural events that lead to most property and crop damage in the United States from the year 1950 - 2011.
+```{r}
+options(repr.plot.height = 6)
+par(mfrow=c(1,2))
+#layout(heights = c(1,2))
+propdmg <- aggregate(PROPDMG ~ EVTYPE, data = data, sum)
+propdmg_desc <- propdmg[order(propdmg$PROPDMG, decreasing = TRUE), ]
+barplot(propdmg_desc[1:10, 2], 
+     xlab="Event Type", ylab="Property Damage", lwd=10, col = rainbow(10))
+legend("topright", 
+       legend= propdmg_desc[1:10, 1], 
+     fill = rainbow(10),ncol = 1,
+       cex = 0.70)
+title(main="Top 10 Disastrous Events Considering Property Damage", cex.main = 0.75)
+
+
+cropdmg <- aggregate(CROPDMG ~ EVTYPE, data = data, sum)
+cropdmg_desc <- cropdmg[order(cropdmg$CROPDMG, decreasing = TRUE), ]
+barplot(cropdmg_desc[1:10, 2], 
+     xlab="Event Type", ylab="Crop Damage", lwd=10, col = rainbow(10))
+legend("topright", 
+       legend= cropdmg_desc[1:10, 1], 
+     fill = rainbow(10),ncol = 1,
+       cex = 0.70)
+title(main="Top 10 Disastrous Events Considering Crop Damage", cex.main = 0.75)
+```
+In conclusion, we have determined the ten natural events that caused most damage to human health, human life, property and crops. 
